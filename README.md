@@ -250,6 +250,42 @@ MIT License - See LICENSE file for details
 
 ---
 
+## 🚀 How to Build and Run
+
+### In IntelliJ IDEA
+
+1. **Import the project as a Maven project** (File → Open → select the project root).
+2. **Open the right-side Maven panel** (View → Tool Windows → Maven).
+3. **To build and test:**
+   - Expand `Lifecycle` and double-click `clean`, then `install`.
+4. **To run the app (single pass):**
+   - Expand `Plugins` → `exec` → double-click `exec:java`.
+5. **To run in watch mode:**
+   - At the top of the Maven panel, type `watch` in the `Profiles` field, then double-click `exec:java` under `Plugins`.
+
+### From the Command Line
+
+- **Build and test:**
+  ```cmd
+  mvn clean install
+  ```
+- **Run (single pass):**
+  ```cmd
+  mvn exec:java
+  ```
+- **Run in watch mode:**
+  ```cmd
+  mvn exec:java -Pwatch
+  ```
+
+### Where to put your JSON files
+- Drop exported JSON files into `shapes/input/`.
+- Generated `.java` files will appear in `shapes/output/`.
+- Processed JSONs move to `shapes/input/processed/`.
+- Failed JSONs move to `shapes/input/failed/`.
+
+---
+
 ## 📊 Project Stats
 
 - **Lines of Code:** ~800 (production) + ~250 (tests)

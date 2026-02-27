@@ -5,10 +5,7 @@ target/
 .kotlin
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -40,3 +37,8 @@ build/
 
 ### Project-specific ###
 run_tests.bat
+
+# GSAP Geometry Core - generated and processed files
+shapes/output/
+shapes/input/processed/
+shapes/input/failed/
