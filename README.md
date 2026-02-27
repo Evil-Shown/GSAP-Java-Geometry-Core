@@ -220,7 +220,7 @@ if (result.isValid()) {
 
 ## 🤝 Contributing
 
-This is a personal/educational project. Not currently accepting contributions, but feel free to fork and experiment.
+This is a personal/Research project. Not currently accepting contributions, but feel free to fork and experiment.
 
 ---
 
@@ -263,7 +263,7 @@ MIT License - See LICENSE file for details
 
 **Project:** GSAP Geometry Core  
 **Started:** February 2026  
-**Author:** [Your Name]
+**Author:** Damitha Samarakoon
 
 ---
 
