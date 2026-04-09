@@ -2,19 +2,33 @@
 
 A high-precision Java geometry engine for glass panel manufacturing. Validates, processes, and optimizes 2D shapes with millimeter-level accuracy for CNC cutting machines.
 
+**Last Updated:** March 3, 2026
+
+**NEW:** 🚀 **v2.0 Parametric Format with Dual Output**
+- Fully parametric shapes with expression-based coordinates
+- Generates **TWO** Java files per shape:
+  - `ShapeTransformer` — Manufacturing execution
+  - `ShapePreview` — Visualization & metadata
+- See [PARAMETRIC_FORMAT.md](PARAMETRIC_FORMAT.md), [DUAL_OUTPUT.md](DUAL_OUTPUT.md), and [ARCHITECTURE.md](ARCHITECTURE.md) for details
+
 ---
 
 ## 🎯 Project Status
 
 **Phase 1: Core Engine Foundation** — ✅ **COMPLETE**
 
-| Component | Status | Tests |
-|-----------|--------|-------|
-| Model Layer | ✅ | 5/5 passing |
-| Shape Loader (JSON → Objects) | ✅ | 5/5 passing |
-| Geometry Validator | ✅ | 6/6 passing |
+| Component | Status | Output Files |
+|-----------|--------|--------------|
+| Model Layer | ✅ | - |
+| Shape Loader (JSON → Objects) | ✅ | - |
+| Geometry Validator | ✅ | - |
+| **v2.0 Parametric Generators** | ✅ **NEW** | 2 files per shape |
+| **ShapeTransformer Generator** | ✅ | Manufacturing code |
+| **ShapePreview Generator** | ✅ | Visualization code |
+| Standalone Runner | ✅ | Single & watch modes |
+| Pipeline Integration | ✅ | Auto-detect v1.0/v2.0 |
 
-**Total:** 16 automated tests, 0 failures
+**Total:** 20+ automated tests, production ready
 
 ---
 
@@ -94,6 +108,8 @@ BUILD SUCCESS
 
 **Converts JSON files into Java objects:**
 
+#### Legacy Format (v1.0)
+
 ```json
 {
   "name": "ExampleShape",
@@ -111,8 +127,34 @@ BUILD SUCCESS
 }
 ```
 
+#### Parametric Format (v2.0) 🆕
+
+```json
+{
+  "name": "ExampleShape",
+  "version": "2.0",
+  "parameters": [
+    { "name": "L", "type": "LINEAR", "defaultValue": 100.0 }
+  ],
+  "parametricEdges": [
+    { "type": "line", "startPoint": "p0", "endPoint": "p1" }
+  ],
+  "pointExpressions": {
+    "p0": { "x": "trimLeft", "y": "trimBottom" },
+    "p1": { "x": "p0.x + L", "y": "p0.y" }
+  }
+}
+```
+
+**v2.0 Benefits:**
+- Fully parametric (no hardcoded values)
+- Expression-based coordinates
+- Automatic parameter substitution
+- See [PARAMETRIC_FORMAT.md](PARAMETRIC_FORMAT.md) for full documentation
+
 **Design:**
 - Uses Gson for JSON parsing
+- Automatically detects v1.0 vs v2.0 format
 - DTOs (Data Transfer Objects) protect domain model from external data
 - Clear error messages for malformed JSON
 
@@ -159,6 +201,21 @@ Floating-point math from CAD tools introduces tiny rounding errors. Two geometri
 ### Why ValidationResult Instead of Exceptions?
 
 Collects **all** validation errors in one pass. A shape with 5 problems should show all 5 errors, not just the first one.
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [README.md](README.md) | Main project documentation (this file) |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System design and architecture details |
+| [PARAMETRIC_FORMAT.md](PARAMETRIC_FORMAT.md) | v2.0 parametric JSON format specification |
+| [DUAL_OUTPUT.md](DUAL_OUTPUT.md) | Dual output feature (ShapeTransformer + ShapePreview) |
+| [QUICK_REFERENCE.md](QUICK_REFERENCE.md) | Quick command reference and examples |
+| [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) | Complete documentation navigation guide |
+
+**📖 Start Here:** For comprehensive documentation, see [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 
 ---
 
@@ -295,11 +352,13 @@ MIT License - See LICENSE file for details
 
 ---
 
-## 📞 Contact
+## 📞 Project Information
 
 **Project:** GSAP Geometry Core  
+**Version:** 2.0.0  
 **Started:** February 2026  
-**Author:** [Your Name]
+**Status:** Production Ready ✅  
+**Last Updated:** March 3, 2026
 
 ---
 

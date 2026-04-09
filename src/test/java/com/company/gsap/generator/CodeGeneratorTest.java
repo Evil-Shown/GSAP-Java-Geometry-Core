@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -114,8 +115,10 @@ class CodeGeneratorTest {
         ShapePipeline pipeline = new ShapePipeline();
         String jsonPath = resourcePath("test-rectangle.json");
 
-        Path outputFile = pipeline.processAndGenerate(jsonPath, tempDir.toString());
+        List<Path> outputFiles = pipeline.processAndGenerate(jsonPath, tempDir.toString());
 
+        assertFalse(outputFiles.isEmpty(), "Generated .java files should exist");
+        Path outputFile = outputFiles.get(0);
         assertTrue(Files.exists(outputFile), "Generated .java file should exist on disk");
         assertEquals("ShapeTransformer_TestRectangle.java", outputFile.getFileName().toString());
 

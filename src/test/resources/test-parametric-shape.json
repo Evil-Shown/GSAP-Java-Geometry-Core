@@ -1,0 +1,122 @@
+{
+  "name": "TestParametricShape",
+  "version": "2.0",
+  "unit": "mm",
+  "thickness": 5,
+  "parameters": [
+    {
+      "name": "L",
+      "type": "LINEAR",
+      "defaultValue": 20000.0,
+      "description": "Overall width"
+    },
+    {
+      "name": "H",
+      "type": "LINEAR",
+      "defaultValue": 40000.0,
+      "description": "Overall height"
+    },
+    {
+      "name": "R1",
+      "type": "RADIUS",
+      "defaultValue": 10000.0,
+      "description": "Corner radius"
+    }
+  ],
+  "parametricEdges": [
+    {
+      "type": "line",
+      "startPoint": "p0",
+      "endPoint": "p1"
+    },
+    {
+      "type": "line",
+      "startPoint": "p1",
+      "endPoint": "p2"
+    },
+    {
+      "type": "line",
+      "startPoint": "p2",
+      "endPoint": "p3"
+    },
+    {
+      "type": "arc",
+      "startPoint": "p3",
+      "endPoint": "p4",
+      "radiusParam": "R1",
+      "largeArc": false,
+      "sweep": false,
+      "centerExpression": {
+        "x": "p0.x + L - R1",
+        "y": "p0.y - R1"
+      }
+    },
+    {
+      "type": "line",
+      "startPoint": "p4",
+      "endPoint": "p0"
+    }
+  ],
+  "pointExpressions": {
+    "p0": {
+      "x": "trimLeft",
+      "y": "trimBottom"
+    },
+    "p1": {
+      "x": "p0.x",
+      "y": "p0.y - H"
+    },
+    "p2": {
+      "x": "p0.x + L",
+      "y": "p0.y - H"
+    },
+    "p3": {
+      "x": "p0.x + L",
+      "y": "p0.y - R1"
+    },
+    "p4": {
+      "x": "p0.x + L - R1",
+      "y": "p0.y"
+    }
+  },
+  "parametricCompleteness": {
+    "fullyParametric": true,
+    "literalPoints": [],
+    "unmatchedArcs": []
+  },
+  "edges": [
+    {
+      "type": "line",
+      "start": { "x": 0, "y": 5000 },
+      "end": { "x": 0, "y": -35000 },
+      "id": "edge_1"
+    },
+    {
+      "type": "line",
+      "start": { "x": 0, "y": -35000 },
+      "end": { "x": 20000, "y": -35000 },
+      "id": "edge_2"
+    },
+    {
+      "type": "line",
+      "start": { "x": 20000, "y": -35000 },
+      "end": { "x": 20000, "y": -5000 },
+      "id": "edge_3"
+    },
+    {
+      "type": "arc",
+      "center": { "x": 10000, "y": -5000 },
+      "radius": 10000,
+      "startAngle": 0,
+      "endAngle": 1.5708,
+      "clockwise": false,
+      "id": "edge_4"
+    },
+    {
+      "type": "line",
+      "start": { "x": 10000, "y": 5000 },
+      "end": { "x": 0, "y": 5000 },
+      "id": "edge_5"
+    }
+  ]
+}

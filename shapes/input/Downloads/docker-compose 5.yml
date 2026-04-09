@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  redisdb:
+    image: redis:alpine
+
+  spil.authorization.api:
+    image: spilclouddev/spilauthorizationapi
+
+  spil.api.gateway:
+    image: spilclouddev/spilapigateway
+
+
+  spil.common.api:
+    image: spilclouddev/spilcommonapi
+
+
+  spil.inventory.api:
+    image: spilclouddev/spilinventoryapi

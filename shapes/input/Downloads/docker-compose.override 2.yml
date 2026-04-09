@@ -1,0 +1,73 @@
+version: '3.4'
+
+services:
+  redisdb:
+    container_name: redisdb
+    restart: always
+    ports:
+      - "6379:6379"
+
+  spil.api.gateway:
+    container_name: spil.api.gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=DockerDeployment
+      - ASPNETCORE_URLS=http://+:80
+    restart: always
+    depends_on:
+      - spil.authorization.api
+      - spil.common.api
+      - spil.inventory.api
+      # - spil.accountpayable.api
+      # - spil.accountreceivable.api
+      # - spil.despatch.api
+      # - spil.glazing.api
+      # - spil.orderentry.api
+      # - spil.planningandoptimization.api
+      # - spil.pricingandcosting.api
+      # - spil.useradministration.api
+    ports:
+      - "8050:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  spil.authorization.api:
+    container_name: spil.authorization.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # - "ConnectionStrings__UserDatabase=Server=spilcloud.centralindia.cloudapp.azure.com;Initial Catalog=UserDB;Persist Security Info=False;User ID=sa;Password=Spil1@34#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+      - "ConnectionStrings__UserDatabase=Data Source=host.docker.internal, 1433;Initial Catalog=UserDB;Persist Security Info=True;User ID=sa;Password=sa;Encrypt=True;Trust Server Certificate=True;"
+      - "cacheSettings__ConnectionString=redisdb:6379,password=rdsSpil@123"
+    restart: always
+    depends_on:
+      - redisdb
+    ports:
+      - "8000:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+  spil.common.api:
+    container_name: spil.common.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "cacheSettings__ConnectionString=redisdb:6379,password=rdsSpil@123"
+    restart: always
+    depends_on:
+      - redisdb
+    ports:
+      - "8001:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+  spil.inventory.api:
+    container_name: spil.inventory.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "cacheSettings__ConnectionString=redisdb:6379,password=rdsSpil@123"
+    restart: always
+    depends_on:
+      - redisdb
+    ports:
+      - "8002:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
