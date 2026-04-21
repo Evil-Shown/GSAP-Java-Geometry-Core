@@ -79,7 +79,7 @@ Executes shape transformations for manufacturing, including resizing and offset 
 ### Generated Code Structure
 
 ```java
-package com.company.gsap.generated;
+package com.example.geometry.generated;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -191,7 +191,7 @@ Provides visualization and metadata for UI components, completely independent of
 ### Generated Code Structure
 
 ```java
-package com.company.gsap.generated;
+package com.example.geometry.generated;
 
 import java.awt.geom.Point2D;
 import java.util.*;
@@ -447,7 +447,7 @@ import com.manufacturing.ShapeTransformer;
 import com.manufacturing.Param;
 
 // After (v2.0): UI is standalone
-import com.company.gsap.generated.ShapePreview_XXX;
+import com.example.geometry.generated.ShapePreview_XXX;
 ```
 
 ### 3. Independent Evolution
