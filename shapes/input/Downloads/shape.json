@@ -1,0 +1,19 @@
+{
+  "name": "shape",
+  "version": "1.0",
+  "unit": "mm",
+  "thickness": 1,
+  "edges": [
+    {
+      "type": "arc",
+      "center": {
+        "x": -3900,
+        "y": 1600
+      },
+      "radius": 2055.5600999999997,
+      "startAngle": 0,
+      "endAngle": 6.2830853071795865,
+      "clockwise": false
+    }
+  ]
+}

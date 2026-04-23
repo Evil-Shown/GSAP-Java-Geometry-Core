@@ -1,0 +1,15 @@
+┌─────────────────────────────────────────────┐
+│          AUTHENTICATION MODULE               │
+├─────────────────────────────────────────────┤
+│  Components:                                 │
+│  ├── LoginForm (toggle with Signup)          │
+│  ├── SignupForm                               │
+│  ├── ForgotPassword                           │
+│  └── ResetPassword                            │
+├─────────────────────────────────────────────┤
+│  Services:                                    │
+│  ├── JWT token generation/validation          │
+│  ├── Password hashing (bcrypt)                │
+│  ├── Email service (Nodemailer)               │
+│  └── Session management                        │
+└─────────────────────────────────────────────┘
