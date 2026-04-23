@@ -39,6 +39,7 @@ public class DefaultShapeProcessor {
         }
 
         List<EdgeDefinition> transformed = transformationService.apply(definition.edges(), allTransformations);
+        transformed = EdgeServiceOutlineExpander.apply(transformed, input.edgeServiceAmountsByEdgeId());
         ResolvedShape resolvedShape = new ResolvedShape(definition.id(), definition.parameters(), transformed, mergedMetadata);
         Geometry geometry = geometryBuilder.build(resolvedShape);
         ShapeMetrics metrics = measurementService.measure(geometry.edges());

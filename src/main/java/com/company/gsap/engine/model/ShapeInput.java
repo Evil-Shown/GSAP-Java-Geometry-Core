@@ -8,6 +8,16 @@ public record ShapeInput(
         String shapeJson,
         Map<String, Double> parameters,
         List<Transformation> transformations,
-        Map<String, String> metadata
+        Map<String, String> metadata,
+        /**
+         * Per-edge outline expansion in drawing units (e.g. mm), keyed by edge {@code id} from the shape JSON.
+         * Positive values grow the outline outward around the base shape (same intent as library shapes with edge services).
+         */
+        Map<String, Double> edgeServiceAmountsByEdgeId
 ) {
+    public ShapeInput {
+        if (edgeServiceAmountsByEdgeId == null) {
+            edgeServiceAmountsByEdgeId = Map.of();
+        }
+    }
 }
