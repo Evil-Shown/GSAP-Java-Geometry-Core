@@ -180,7 +180,75 @@ if (result.isValid()) {
 }
 ```
 
-## Documentation Map
+---
+
+## 🤝 Contributing
+
+This is a personal/Research project. Not currently accepting contributions, but feel free to fork and experiment.
+
+---
+
+## 📄 License
+
+MIT License - See LICENSE file for details
+
+---
+
+## 🔧 Troubleshooting
+
+### IntelliJ shows 244 errors
+
+**Fix:** Open the project by selecting `pom.xml` directly (not the folder):
+1. File → Open
+2. Select `pom.xml`
+3. Click "Open as Project"
+4. Wait for Maven indexing to complete
+
+### Tests fail with "InvalidPathException"
+
+**Fix:** Already fixed in code. Using `Paths.get(resource.toURI())` instead of `URL.getPath()` for Windows compatibility.
+
+### Build warnings about encoding
+
+**Fix:** Already fixed. `pom.xml` includes `<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>`
+
+---
+
+## 🚀 How to Build and Run
+
+### In IntelliJ IDEA
+
+1. **Import the project as a Maven project** (File → Open → select the project root).
+2. **Open the right-side Maven panel** (View → Tool Windows → Maven).
+3. **To build and test:**
+   - Expand `Lifecycle` and double-click `clean`, then `install`.
+4. **To run the app (single pass):**
+   - Expand `Plugins` → `exec` → double-click `exec:java`.
+5. **To run in watch mode:**
+   - At the top of the Maven panel, type `watch` in the `Profiles` field, then double-click `exec:java` under `Plugins`.
+
+### From the Command Line
+
+- **Build and test:**
+  ```cmd
+  mvn clean install
+  ```
+- **Run (single pass):**
+  ```cmd
+  mvn exec:java
+  ```
+- **Run in watch mode:**
+  ```cmd
+  mvn exec:java -Pwatch
+  ```
+
+### Where to put your JSON files
+- Drop exported JSON files into `shapes/input/`.
+- Generated `.java` files will appear in `shapes/output/`.
+- Processed JSONs move to `shapes/input/processed/`.
+- Failed JSONs move to `shapes/input/failed/`.
+
+---
 
 - `DOCUMENTATION_INDEX.md` - entry point for all docs
 - `ARCHITECTURE.md` - architecture and processing flow
@@ -198,10 +266,9 @@ if (result.isValid()) {
 
 ## Roadmap
 
-- Expanded geometric operations (offset/corner strategies)
-- Additional validation and manufacturability rules
-- Richer generator templates and metadata support
-- Better observability around queue processing and failures
+**Project:** GSAP Geometry Core  
+**Started:** February 2026  
+**Author:** Damitha Samarakoon
 
 ## License
 
