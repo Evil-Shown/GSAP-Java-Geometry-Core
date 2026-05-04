@@ -1,61 +1,38 @@
-# Quick Reference Guide
+# Quick reference
 
-**GSAP Geometry Core v2.0**  
-**Quick Command & API Reference**  
-**Last Updated:** March 3, 2026
+**GSAP Geometry Core** — commands, JSON templates, and API entry points.  
+**Last updated:** May 4, 2026
 
 ---
 
-## 🚀 Quick Start Commands
+## Quick start commands
 
-### Build & Test
+### Build and test
 
 ```cmd
-REM Clean build and run all tests
 mvn clean test
-
-REM Compile only
 mvn compile
-
-REM Package JAR
 mvn package
-
-REM Clean all generated files
 mvn clean
 ```
 
-### Run the Application
+Current test suite: **42** tests (`mvn test`).
+
+### Run the packaged worker
+
+`mvn exec:java` runs `com.company.gsap.worker.WorkerApplication` — the **Redis + MySQL** job consumer. It is not a local “watch folder” tool. Configure `MYSQL_*`, `REDIS_*`, `OUTPUT_DIR`, etc. (see [README.md](../README.md#running-worker-mode)).
 
 ```cmd
-REM Single pass (process existing files and exit)
-mvn exec:java
-
-REM Watch mode (continuous monitoring)
-mvn exec:java -Pwatch
-
-REM Custom folders
-mvn exec:java -Dexec.args="--input=my/input --output=my/output"
-
-REM Custom folders with watch mode
-mvn exec:java -Dexec.args="--input=my/input --output=my/output --watch=true"
+mvn -q exec:java
 ```
 
-### Batch Scripts
+### File-based pipeline (local / tests)
 
-```cmd
-REM Run tests (if run_tests.bat exists)
-run_tests.bat
-
-REM Process shapes once
-mvn exec:java -Psingle
-
-REM Start watching for new files
-mvn exec:java -Pwatch
-```
+There is no separate `main` class in this repo for “drop JSON in `shapes/input` and exit.” Use `ShapePipeline` in your own code or run integration tests (e.g. `EndToEndIntegrationTest`, `ParametricPipelineTest`) to exercise load → validate → generate. `AppConfig` supports `--input`, `--output`, and `--watch` **parsing** for future or custom runners but is not wired to `WorkerApplication`.
 
 ---
 
-## 📂 Folder Structure
+## Folder structure
 
 ```
 GSAP Geometry Core/
@@ -73,7 +50,7 @@ GSAP Geometry Core/
 
 ---
 
-## 📝 JSON Format Quick Reference
+## JSON format quick reference
 
 ### v1.0 (Legacy)
 
@@ -122,7 +99,7 @@ GSAP Geometry Core/
 
 ---
 
-## 🔧 Expression Syntax
+## Expression syntax
 
 ### Special Keywords
 
@@ -184,7 +161,7 @@ GSAP Geometry Core/
 
 ---
 
-## 📊 Parameter Types
+## Parameter types
 
 | Type | Description | Use For | Example |
 |------|-------------|---------|---------|
@@ -205,7 +182,7 @@ GSAP Geometry Core/
 
 ---
 
-## 🏗️ Edge Types
+## Edge types
 
 ### Line Edge
 
@@ -241,7 +218,7 @@ GSAP Geometry Core/
 
 ---
 
-## 🧪 Testing Commands
+## Testing commands
 
 ### Run All Tests
 
@@ -271,7 +248,7 @@ mvn test -X
 
 ---
 
-## 🔍 Validation Rules
+## Validation rules
 
 ### Shape Requirements
 
@@ -298,7 +275,7 @@ mvn test -X
 
 ---
 
-## 📦 Generated Code Structure
+## Generated code structure
 
 ### ShapeTransformer (Manufacturing)
 
@@ -320,19 +297,23 @@ public class ShapeTransformer_XXX extends ShapeTransformer {
 }
 ```
 
-### ShapePreview (Visualization)
+### ShapePreview (visualization)
+
+Generated under package **`com.company.gsap.generated.preview`**. Preview classes expose `Parameter` (not a separate `ParamInfo` type in the current template), `getPreviewPoints()`, and `calculatePoints(Map<String, Double> paramValues, double trimLeft, double trimBottom)`.
 
 ```java
 public class ShapePreview_XXX {
-    public Map<String, ParamInfo> getParameters() { ... }
+    public Map<String, Parameter> getParameters() { ... }
     public Map<String, String> getMetadata() { ... }
-    public Map<String, Point2D> calculatePreviewPoints(...) { ... }
+    public Map<String, Point2D> getPreviewPoints() { ... }
+    public Map<String, Point2D> calculatePoints(
+            Map<String, Double> paramValues, double trimLeft, double trimBottom) { ... }
 }
 ```
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Build Issues
 
@@ -370,7 +351,7 @@ REM Should be Java 17 or higher
 
 ---
 
-## 📚 API Quick Reference
+## API quick reference
 
 ### ShapeLoader
 
@@ -452,14 +433,13 @@ List<GeneratorResult> results = pipeline.generateCode(
 
 ---
 
-## 🎯 Common Tasks
+## Common tasks
 
-### Task: Add a New Shape
+### Task: Add a new shape
 
-1. Create JSON file (v1.0 or v2.0 format)
-2. Drop into `shapes/input/`
-3. Run `mvn exec:java` or start watch mode
-4. Find generated files in `shapes/output/`
+1. Create JSON (v1.0 or v2.0).
+2. Run through `ShapePipeline` (your harness or tests), or process via the **worker** after enqueueing a job.
+3. Generated `.java` files go to the configured output directory (e.g. `OUTPUT_DIR` / `shapes/output`).
 
 ### Task: Convert v1.0 to v2.0
 
@@ -485,51 +465,20 @@ List<GeneratorResult> results = pipeline.generateCode(
 
 ---
 
-## 🔗 Configuration
+## Configuration notes
 
-### Maven Profiles
-
-| Profile | Activation | Use Case |
-|---------|------------|----------|
-| `single` | Default | One-time processing |
-| `watch` | `-Pwatch` | Continuous monitoring |
-
-### Command Line Arguments
-
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `--input=path` | `shapes/input` | Input folder path |
-| `--output=path` | `shapes/output` | Output folder path |
-| `--watch=true/false` | `false` | Enable watch mode |
-
-### Example Configurations
-
-```cmd
-REM Default (single pass, default folders)
-mvn exec:java
-
-REM Watch mode, default folders
-mvn exec:java -Pwatch
-
-REM Custom folders, single pass
-mvn exec:java -Dexec.args="--input=custom/in --output=custom/out"
-
-REM Everything custom
-mvn exec:java -Dexec.args="--input=custom/in --output=custom/out --watch=true"
-```
+- **`pom.xml`** does not define Maven profiles such as `watch` or `single`; `exec:java` always uses `WorkerApplication`.
+- **`AppConfig`** documents optional CLI-style arguments (`--input`, `--output`, `--watch`) for custom tooling; they are not applied by the worker entrypoint.
 
 ---
 
-## 📈 Performance Tips
+## Performance tips
 
-### Batch Processing
+### Batch processing
 
-Process multiple files in watch mode for efficiency:
-1. Start watch mode once
-2. Drop multiple files
-3. All processed automatically
+In integrated setups, the worker processes jobs from Redis as fast as the pipeline and I/O allow—scale consumers or queue depth as needed. For local batches, call `ShapePipeline` in a loop or run targeted tests.
 
-### Large Shapes
+### Large shapes
 
 For shapes with 100+ edges:
 - Expect generation time: < 1 second
@@ -538,36 +487,19 @@ For shapes with 100+ edges:
 
 ---
 
-## 🆘 Getting Help
-
-### Quick Checks
+## Getting help
 
 ```cmd
-REM 1. Verify Java version
 java -version
-
-REM 2. Verify Maven installation
 mvn -version
-
-REM 3. Check project structure
-dir shapes\input
-dir shapes\output
-
-REM 4. Run tests
 mvn clean test
 ```
 
-### Documentation
-
-- **Format details:** [PARAMETRIC_FORMAT.md](PARAMETRIC_FORMAT.md)
-- **Dual output:** [DUAL_OUTPUT.md](DUAL_OUTPUT.md)
-- **Complete guide:** [COMPLETE_GUIDE.md](COMPLETE_GUIDE.md)
-- **Architecture:** [ARCHITECTURE.md](ARCHITECTURE.md)
-- **Main docs:** [README.md](README.md)
+**Documentation:** [PARAMETRIC_FORMAT.md](PARAMETRIC_FORMAT.md) · [DUAL_OUTPUT.md](DUAL_OUTPUT.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [README.md](../README.md)
 
 ---
 
-## 🎓 Examples
+## Examples
 
 ### Minimal v2.0 Shape
 
@@ -639,8 +571,4 @@ mvn clean test
 
 ---
 
-**Quick Reference Guide v2.0**  
-**Status:** Production Ready ✅  
-**Last Updated:** March 3, 2026
-
-For comprehensive documentation, see [README.md](README.md) and [COMPLETE_GUIDE.md](COMPLETE_GUIDE.md).
+For project scope and worker setup, see [README.md](../README.md) and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

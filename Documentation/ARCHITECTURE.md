@@ -1,169 +1,140 @@
-# GSAP Geometry Core v2.0 - Architecture Overview
+# GSAP Geometry Core v2.0 — Architecture overview
 
-**Version:** 2.0.0  
-**Status:** Production Ready ✅  
-**Last Updated:** March 3, 2026
+**Parametric format:** v2.0.0  
+**Last updated:** May 4, 2026
+
+This document describes the **shape JSON → loader → validation → Java generators** path (`com.company.gsap.loader`, `validation`, `generator`, `pipeline`). The same `ShapePipeline` is invoked from the **Redis/MySQL worker** (`com.company.gsap.worker`) in integrated deployments. The repository also includes a separate **geometry engine** module under `com.company.gsap.engine` (resolution, SVG, measurements) used by tests and downstream tooling.
 
 ```
+  CLIENT / UPSTREAM (e.g. shape editor, API, or test fixtures)
+  Shape JSON: v1.0 literal edges  OR  v2.0 parametricEdges + pointExpressions + …
+                                    │
+                                    ▼
 ╔════════════════════════════════════════════════════════════════════════════╗
-║                         SHAPE EDITOR (JavaScript)                          ║
-║                          ExportService.js v2.0                             ║
-╚════════════════════════════════╦═══════════════════════════════════════════╝
-                                 │
-                                 ▼
-                    ┌────────────────────────┐
-                    │   Parametric JSON      │
-                    │   (v2.0 Format)        │
-                    │                        │
-                    │ • parametricEdges      │
-                    │ • pointExpressions     │
-                    │ • parameters           │
-                    │ • completeness         │
-                    └────────────┬───────────┘
-                                 │
-                                 ▼
-╔════════════════════════════════════════════════════════════════════════════╗
-║                    GSAP GEOMETRY CORE (Java 17+)                           ║
+║  ShapePipeline                                            (Java 17)      ║
+║  Used from tests, custom code, or WorkerApplication → same orchestration  ║
 ╠════════════════════════════════════════════════════════════════════════════╣
 ║                                                                            ║
-║  ┌──────────────────────────────────────────────────────────────────┐    ║
-║  │ 1. ShapeLoader                                                    │    ║
-║  │    • loadDTO() reads JSON                                         │    ║
-║  │    • Parses into ShapeDTO                                         │    ║
-║  │    • Detects format version                                       │    ║
-║  └───────────────────────────┬──────────────────────────────────────┘    ║
-║                              │                                             ║
-║                              ▼                                             ║
-║  ┌──────────────────────────────────────────────────────────────────┐    ║
-║  │ 2. Format Detection                                               │    ║
-║  │    if (parametricEdges exists) → v2.0                            │    ║
-║  │    else → v1.0 legacy                                            │    ║
-║  └──────────────┬──────────────────────────────┬────────────────────┘    ║
-║                 │                               │                          ║
-║      ┌──────────┴────────┐         ┌──────────┴────────┐                 ║
-║      │    v1.0 Path      │         │    v2.0 Path      │                 ║
-║      │  (Legacy)         │         │  (Parametric)     │                 ║
-║      └──────────┬────────┘         └──────────┬────────┘                 ║
-║                 │                              │                           ║
-║                 ▼                              ▼                           ║
-║  ┌──────────────────────┐      ┌──────────────────────────────────────┐  ║
-║  │ CodeGenerator        │      │ ParametricCodeGenerator              │  ║
-║  │ (v1.0)               │      │ (v2.0)                               │  ║
-║  │                      │      │ • Evaluates expressions              │  ║
-║  │ • Hardcoded coords   │      │ • Orders dependencies                │  ║
-║  │ • 1 output file      │      │ • Generates parametric code          │  ║
-║  └──────────┬───────────┘      └──────────┬───────────────────────────┘  ║
-║             │                              │                               ║
-║             │                              ├──────────────────┐            ║
-║             │                              │                  │            ║
-║             │                              ▼                  ▼            ║
-║             │               ┌──────────────────┐  ┌──────────────────┐   ║
-║             │               │ ShapeTransformer │  │ ShapePreview     │   ║
-║             │               │ Generator        │  │ Generator        │   ║
-║             │               └────────┬─────────┘  └────────┬─────────┘   ║
-║             │                        │                     │              ║
-║             ▼                        ▼                     ▼              ║
-║  ┌──────────────────┐    ┌────────────────────┐ ┌──────────────────┐   ║
-║  │ 1 File Output    │    │ 2 Files Output                          │   ║
-║  │                  │    │                                          │   ║
-║  │ ShapeTransformer │    │ ShapeTransformer   │ │ ShapePreview     │   ║
-║  │ _XXX.java        │    │ _XXX.java          │ │ _XXX.java        │   ║
-║  │                  │    │                     │ │                  │   ║
-║  │ (hardcoded)      │    │ (parametric)       │ │ (metadata)       │   ║
-║  └──────────────────┘    └────────────────────┘ └──────────────────┘   ║
+║   ┌────────────────────────────────────────────────────────────────────┐   ║
+║   │ 1. ShapeLoader                                                     │   ║
+║   │    load(path) / loadDTO(path) → domain Shape + ShapeDTO            │   ║
+║   └───────────────────────────────────┬──────────────────────────────┘   ║
+║                                       │                                   ║
+║                                       ▼                                   ║
+║   ┌────────────────────────────────────────────────────────────────────┐   ║
+║   │ 2. GeometryValidator                                               │   ║
+║   │    Closed polygon, edge gaps, min edge count, degenerate checks    │   ║
+║   └───────────────────────────────────┬──────────────────────────────┘   ║
+║                                       │                                   ║
+║                        ┌──────────────┴──────────────┐                    ║
+║                        │ ShapeDTO.parametricEdges    │                    ║
+║                        │ present & non-empty?        │                    ║
+║            ┌───────────┴───────────┐    ┌───────────┴───────────┐          ║
+║            │ NO  → v1.0 legacy    │    │ YES → v2.0 parametric│          ║
+║            └───────────┬──────────┘    └───────────┬──────────┘          ║
+║                        │                          │                      ║
+║                        ▼                          ▼                      ║
+║            ┌─────────────────────┐   ┌─────────────────────────────┐   ║
+║            │ CodeGenerator         │   │ ParametricCodeGenerator     │   ║
+║            │ 1 output file         │   │ + ShapePreviewGenerator     │   ║
+║            │ ShapeTransformer_*    │   │ 2 output files              │   ║
+║            │ (coordinates literal  │   │ transformer + preview       │   ║
+║            │  in generated Java)   │   │                             │   ║
+║            └───────────┬───────────┘   └──────────────┬──────────────┘   ║
+║                        │                            │                    ║
+║                        └────────────┬───────────────┘                    ║
+║                                     │                                    ║
+║                                     ▼                                    ║
+║            Write under OUTPUT_DIR (env; default ./shapes/output/)        ║
+║            • com.company.gsap.generated.ShapeTransformer_<Name>          ║
+║            • com.company.gsap.generated.preview.ShapePreview_<Name> (v2) ║
 ║                                                                            ║
 ╚════════════════════════════════════════════════════════════════════════════╝
-                 │                        │                   │
-                 └────────────┬───────────┴───────────────────┘
-                              │
-                              ▼
-        ╔═════════════════════════════════════════════════╗
-        ║              OUTPUT DIRECTORY                    ║
-        ║          shapes/output/                          ║
-        ╠═════════════════════════════════════════════════╣
-        ║                                                  ║
-        ║  • ShapeTransformer_XXX.java                    ║
-        ║    └─→ For manufacturing/CNC                    ║
-        ║                                                  ║
-        ║  • ShapePreview_XXX.java (v2.0 only)           ║
-        ║    └─→ For visualization/UI                     ║
-        ║                                                  ║
-        ╚═════════════════════════════════════════════════╝
-                 │                              │
-     ┌───────────┴──────────┐      ┌──────────┴───────────┐
-     ▼                      ▼      ▼                      ▼
-┌─────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│ CNC Machine │    │ Manufacturing    │    │ UI / Frontend    │
-│             │    │ Execution System │    │ Preview System   │
-│             │    │                  │    │                  │
-│ Uses:       │    │ Uses:            │    │ Uses:            │
-│ Edges       │◄───│ ShapeTransformer │    │ ShapePreview     │
-│             │    │ .resize()        │    │ .getParameters() │
-│             │    │                  │    │ .getPreviewPts() │
-└─────────────┘    └──────────────────┘    └──────────────────┘
+        │                              │                      │
+        │ List<Edge> / CNC             │ host linkage         │ inspection
+        ▼                              ▼                      ▼
+ ┌──────────────┐           ┌──────────────────┐    ┌────────────────────────┐
+ │ CAM /        │           │ Manufacturing    │    │ ShapePreview_*         │
+ │ fabrication  │◄──────────│ stack uses       │    │ getParameters()        │
+ │              │           │ ShapeTransformer │    │ getPreviewPoints()     │
+ │              │           │ .resize(Param,   │    │ calculatePoints(…)     │
+ └──────────────┘           │  ParamList)      │    └────────────────────────┘
+                             └──────────────────┘
+
+  Integrated deployment:  Redis job → WorkerApplication → ShapePipeline → OUTPUT_DIR
 ```
 
 ---
 
 ## Component Responsibilities
 
-### Shape Editor (JavaScript)
-- Creates/edits shapes visually
-- Auto-assigns parametric expressions
-- Exports v2.0 JSON with full parametric data
+### Client / shape editor (upstream)
+
+- Produces shape JSON (v1.0 or v2.0) consumed by the loader.
+- v2.0 adds parametric edges, point expressions, and parameters for dual-file generation.
 
 ### ShapeLoader (Java)
-- Reads JSON files
-- Parses into DTOs
-- Detects v1.0 vs v2.0 format
-- Routes to appropriate generator
+
+- Reads JSON from disk or paths supplied by the caller.
+- Parses into `ShapeDTO` and domain `Shape`.
+- Supports both legacy and parametric payloads.
+
+### GeometryValidator (Java)
+
+- Validates topology and numeric consistency before code generation.
+- Invalid shapes do not reach the generators (pipeline fails fast after load).
 
 ### ParametricCodeGenerator
-- Reads parametricEdges and pointExpressions
-- Evaluates string expressions
-- Orders points by dependency
-- Generates ShapeTransformer with parametric code
 
-### ShapePreviewGenerator (NEW)
-- Extracts parameters with metadata
-- Collects shape metadata
-- Creates point calculator
-- Generates ShapePreview class
+- Reads `parametricEdges` and `pointExpressions`.
+- Evaluates string expressions and orders point dependencies.
+- Emits `com.company.gsap.generated.ShapeTransformer_*` with parametric `resize()`.
 
-### ShapeTransformer (Output)
-- Extends base ShapeTransformer class
-- Implements resize() method
-- Uses Param and ParamList
-- Returns List<Edge> for manufacturing
+### ShapePreviewGenerator
 
-### ShapePreview (Output - NEW)
-- Standalone class
-- Provides parameter inspection
-- Exposes metadata
-- Calculates preview points
-- No manufacturing dependencies
+- Builds parameter and metadata maps for UI-oriented output.
+- Emits `com.company.gsap.generated.preview.ShapePreview_*` with preview calculators.
+
+### CodeGenerator (v1.0)
+
+- Legacy path when parametric data is absent.
+- Emits a single `ShapeTransformer_*` with literal coordinates.
+
+### ShapeTransformer (generated)
+
+- Extends the host `ShapeTransformer` base class.
+- Implements `resize(Param, ParamList)` and returns `List<Edge>` for manufacturing.
+
+### ShapePreview (generated)
+
+- Standalone preview class under `com.company.gsap.generated.preview`.
+- Exposes parameters, metadata, `getPreviewPoints()`, and `calculatePoints(...)`.
+- No dependency on manufacturing edge construction for UI-only use.
+
+### WorkerApplication (optional runtime)
+
+- Consumes jobs from Redis and runs the same `ShapePipeline` with JDBC-backed state.
+- Writes generated sources to `OUTPUT_DIR`.
 
 ---
 
 ## Data Flow Summary
 
 ```
-JSON → Loader → Format Detection
-                     │
-         ┌───────────┴───────────┐
-         │                       │
-      v1.0 Path              v2.0 Path
-         │                       │
-    CodeGen                 ParamCodeGen + PreviewGen
-         │                       │              │
-    1 File                  2 Files         2 Files
-         │                       │              │
- ShapeTransformer      ShapeTransformer  ShapePreview
-  (hardcoded)           (parametric)    (metadata)
-         │                       │              │
-         └───────────┬───────────┴──────────────┘
-                     │
-              Manufacturing / UI
+JSON → Loader → Validator → branch on parametricEdges?
+                                    │
+                    ┌───────────────┴───────────────┐
+                    │                               │
+                 absent                         non-empty
+                    │                               │
+               CodeGenerator          ParametricCodeGenerator
+               (1 file)             + ShapePreviewGenerator
+                    │                      (2 files)
+                    └───────────────┬───────────────┘
+                                    │
+                          OUTPUT_DIR (generated .java)
+                                    │
+                          manufacturing / UI consumers
 ```
 
 ---
@@ -192,8 +163,5 @@ JSON → Loader → Format Detection
 
 ---
 
-**Architecture:** Dual-output parametric geometry engine  
-**Version:** 2.0.0  
-**Status:** ✅ Production ready  
-**Backward Compatible:** Yes (v1.0 still supported)  
-**Last Updated:** March 3, 2026
+**Summary:** Dual-output parametric geometry pipeline (v2.0) with v1.0 legacy support.  
+**Backward compatible:** yes — v1.0 continues to emit a single `ShapeTransformer` class.
