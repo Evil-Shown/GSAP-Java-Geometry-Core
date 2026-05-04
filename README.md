@@ -36,7 +36,7 @@ Shape JSON (from editor / DB)
   Generated Java output artifacts
 ```
 
-For deeper architecture details, see `ARCHITECTURE.md`.
+For deeper architecture details, see [Documentation/ARCHITECTURE.md](Documentation/ARCHITECTURE.md).
 
 ## Key Features
 
@@ -72,14 +72,16 @@ See `PARAMETRIC_FORMAT.md` and `DUAL_OUTPUT.md` for full contracts.
 ```text
 GSAP Geometry Core/
 |- src/main/java/com/company/gsap/
-|  |- model/                # Domain types
+|  |- model/                # Domain types (edges, points, shape)
 |  |- loader/               # JSON parsing + DTOs
 |  |- validation/           # Geometry validation rules
 |  |- pipeline/             # Shape processing orchestration
 |  |- generator/            # Java output generation
-|  `- worker/               # Redis/MySQL worker runtime
+|  |- engine/                # Geometry engine, SVG, measurements (adjacent to pipeline)
+|  `- worker/                # Redis/MySQL worker runtime
 |- src/test/                # Unit and integration-style tests
 |- shapes/                  # Input/output working directories
+|- Documentation/           # Format specs, architecture, quick reference
 |- pom.xml                  # Maven build configuration
 `- README.md
 ```
@@ -188,81 +190,58 @@ This is a personal/Research project. Not currently accepting contributions, but 
 
 ---
 
-## 📄 License
-
-MIT License - See LICENSE file for details
-
----
-
-## 🔧 Troubleshooting
-
-### IntelliJ shows 244 errors
-
-**Fix:** Open the project by selecting `pom.xml` directly (not the folder):
-1. File → Open
-2. Select `pom.xml`
-3. Click "Open as Project"
-4. Wait for Maven indexing to complete
-
-### Tests fail with "InvalidPathException"
-
-**Fix:** Already fixed in code. Using `Paths.get(resource.toURI())` instead of `URL.getPath()` for Windows compatibility.
-
-### Build warnings about encoding
-
-**Fix:** Already fixed. `pom.xml` includes `<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>`
-
----
-
-## 🚀 How to Build and Run
+## How to build and run
 
 ### In IntelliJ IDEA
 
-1. **Import the project as a Maven project** (File → Open → select the project root).
-2. **Open the right-side Maven panel** (View → Tool Windows → Maven).
-3. **To build and test:**
-   - Expand `Lifecycle` and double-click `clean`, then `install`.
-4. **To run the app (single pass):**
-   - Expand `Plugins` → `exec` → double-click `exec:java`.
-5. **To run in watch mode:**
-   - At the top of the Maven panel, type `watch` in the `Profiles` field, then double-click `exec:java` under `Plugins`.
+1. Import the project as a Maven project (File → Open → project root or `pom.xml`).
+2. Open the Maven tool window (View → Tool Windows → Maven).
+3. Build and test: Lifecycle → `clean`, then `test` or `install`.
+4. Run the worker: Plugins → `exec` → `exec:java` (this starts `WorkerApplication`; ensure Redis and MySQL are available and env vars are set — see [Running Worker Mode](#running-worker-mode)).
 
-### From the Command Line
+### From the command line
 
-- **Build and test:**
-  ```cmd
-  mvn clean install
-  ```
-- **Run (single pass):**
-  ```cmd
-  mvn exec:java
-  ```
-- **Run in watch mode:**
-  ```cmd
-  mvn exec:java -Pwatch
-  ```
+```cmd
+mvn clean test
+mvn -q exec:java
+```
 
-### Where to put your JSON files
-- Drop exported JSON files into `shapes/input/`.
-- Generated `.java` files will appear in `shapes/output/`.
-- Processed JSONs move to `shapes/input/processed/`.
-- Failed JSONs move to `shapes/input/failed/`.
+`exec:java` runs the **Redis + MySQL worker**, not a standalone “watch input folder” CLI. To exercise the JSON pipeline locally, use unit/integration tests or embed `ShapePipeline` in your own code.
+
+### Typical directories
+
+When using file-based tooling or tests, inputs and outputs often live under `shapes/input/` and `shapes/output/`; the worker uses `OUTPUT_DIR` (default `shapes/output`) for generated artifacts.
 
 ---
 
-- `DOCUMENTATION_INDEX.md` - entry point for all docs
-- `ARCHITECTURE.md` - architecture and processing flow
-- `PARAMETRIC_FORMAT.md` - v2.0 JSON schema and conventions
-- `DUAL_OUTPUT.md` - generated output structure and intent
-- `QUICK_REFERENCE.md` - frequently used commands and quick ops
+### Documentation (this repo)
+
+- [Documentation/DOCUMENTATION_INDEX.md](Documentation/DOCUMENTATION_INDEX.md) — navigation
+- [Documentation/ARCHITECTURE.md](Documentation/ARCHITECTURE.md) — pipeline architecture
+- [Documentation/PARAMETRIC_FORMAT.md](Documentation/PARAMETRIC_FORMAT.md) — v2.0 JSON schema
+- [Documentation/DUAL_OUTPUT.md](Documentation/DUAL_OUTPUT.md) — generated Java outputs
+- [Documentation/QUICK_REFERENCE.md](Documentation/QUICK_REFERENCE.md) — commands and APIs
 
 ## Troubleshooting
 
-- **IDE import issues**: open the project as a Maven project via `pom.xml`
-- **MySQL connection errors**: verify `MYSQL_*`/`JDBC_URL` values and DB availability
-- **Redis connection errors**: verify `REDIS_HOST`/`REDIS_PORT` and server state
-- **No generated files**: verify `OUTPUT_DIR` exists or can be created, then check worker logs
-- **Test path issues on Windows**: ensure paths are URI-safe and do not rely on raw URL path parsing
+### IntelliJ shows many errors on import
+
+Open the project via **File → Open → `pom.xml`** → “Open as Project”, then wait for Maven indexing.
+
+### Tests fail with `InvalidPathException`
+
+Resolved in code by using `Paths.get(resource.toURI())` instead of `URL.getPath()` on Windows.
+
+### Build warnings about encoding
+
+`pom.xml` sets `<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>`.
+
+### Runtime and integration
+
+- **MySQL connection errors:** verify `MYSQL_*` / `JDBC_URL` and database availability.
+- **Redis connection errors:** verify `REDIS_HOST` / `REDIS_PORT` and server state.
+- **No generated files:** ensure `OUTPUT_DIR` exists or is creatable; check worker logs.
+- **Test path issues on Windows:** avoid raw URL paths for classpath resources; prefer URI-based resolution.
 
 ## Roadmap
 

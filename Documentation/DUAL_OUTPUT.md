@@ -1,9 +1,9 @@
-# Dual Output Feature — ShapeTransformer + ShapePreview
+# Dual output — ShapeTransformer + ShapePreview
 
 **GSAP Geometry Core v2.0**  
-**Feature:** Dual File Generation  
-**Status:** Production Ready  
-**Last Updated:** March 3, 2026
+**Last updated:** May 4, 2026
+
+Generated code packages: **`com.company.gsap.generated`** (transformer) and **`com.company.gsap.generated.preview`** (preview), per `ShapeTemplate` / `ShapePreviewTemplate`.
 
 ---
 
@@ -79,7 +79,7 @@ Executes shape transformations for manufacturing, including resizing and offset 
 ### Generated Code Structure
 
 ```java
-package com.example.geometry.generated;
+package com.company.gsap.generated;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -191,85 +191,49 @@ Provides visualization and metadata for UI components, completely independent of
 ### Generated Code Structure
 
 ```java
-package com.example.geometry.generated;
+package com.company.gsap.generated.preview;
 
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ShapePreview_ExampleShape {
 
-    // ═══ Parameter definitions ═══
-    private final Map<String, ParamInfo> parameters;
-    
+    private final Map<String, Parameter> parameters = new HashMap<>();
+    private final Map<String, String> metadata = new HashMap<>();
+
     public ShapePreview_ExampleShape() {
-        parameters = new LinkedHashMap<>();
-        parameters.put("L", new ParamInfo("L", "LINEAR", 1000.0, "Overall width"));
-        parameters.put("H", new ParamInfo("H", "LINEAR", 800.0, "Overall height"));
-        parameters.put("R1", new ParamInfo("R1", "RADIUS", 50.0, "Corner radius"));
+        initializeParameters();
+        initializeMetadata();
     }
-    
-    // ═══ Public API ═══
-    
-    public Map<String, ParamInfo> getParameters() {
-        return Collections.unmodifiableMap(parameters);
-    }
-    
-    public Map<String, String> getMetadata() {
-        Map<String, String> meta = new LinkedHashMap<>();
-        meta.put("name", "ExampleShape");
-        meta.put("unit", "mm");
-        meta.put("thickness", "5.0");
-        meta.put("version", "2.0");
-        return meta;
-    }
-    
-    public Map<String, Point2D> calculatePreviewPoints(Map<String, Double> paramValues) {
-        Map<String, Point2D> points = new LinkedHashMap<>();
-        
-        double trimLeft = paramValues.getOrDefault("trimLeft", 0.0);
-        double trimBottom = paramValues.getOrDefault("trimBottom", 0.0);
-        double L = paramValues.getOrDefault("L", 1000.0);
-        double H = paramValues.getOrDefault("H", 800.0);
-        double R1 = paramValues.getOrDefault("R1", 50.0);
-        
-        // Calculate points
-        Point2D p0 = new Point2D.Double(trimLeft, trimBottom);
-        points.put("p0", p0);
-        
-        Point2D p1 = new Point2D.Double(p0.getX(), p0.getY() - H);
-        points.put("p1", p1);
-        
-        Point2D p2 = new Point2D.Double(p0.getX() + L, p1.getY());
-        points.put("p2", p2);
-        
-        return points;
-    }
-    
-    // ═══ Parameter info class ═══
-    
-    public static class ParamInfo {
+
+    public Map<String, Parameter> getParameters() { ... }
+
+    public Map<String, String> getMetadata() { ... }
+
+    /** Defaults + trim (0,0) — convenience for UI sketches */
+    public Map<String, Point2D> getPreviewPoints() { ... }
+
+    /** Full control: parameter values and trim references */
+    public Map<String, Point2D> calculatePoints(
+            Map<String, Double> paramValues, double trimLeft, double trimBottom) { ... }
+
+    public static class Parameter {
         public final String name;
         public final String type;
         public final double defaultValue;
         public final String description;
-        
-        public ParamInfo(String name, String type, double defaultValue, String description) {
-            this.name = name;
-            this.type = type;
-            this.defaultValue = defaultValue;
-            this.description = description;
-        }
     }
 }
 ```
 
 ### Key Components
 
-#### 1. Parameter Information
+#### 1. Parameter information
 
 Complete metadata for each parameter:
 ```java
-ParamInfo info = preview.getParameters().get("L");
+Parameter info = preview.getParameters().get("L");
 System.out.println("Name: " + info.name);
 System.out.println("Type: " + info.type);
 System.out.println("Default: " + info.defaultValue);
@@ -285,16 +249,16 @@ String unit = meta.get("unit");       // "mm"
 String thickness = meta.get("thickness"); // "5.0"
 ```
 
-#### 3. Preview Point Calculator
+#### 3. Preview point calculator
 
-Calculate all shape points for given parameter values:
+Calculate all shape points for given parameter values and trim:
 ```java
 Map<String, Double> params = new HashMap<>();
 params.put("L", 1200.0);
 params.put("H", 900.0);
 params.put("R1", 75.0);
 
-Map<String, Point2D> points = preview.calculatePreviewPoints(params);
+Map<String, Point2D> points = preview.calculatePoints(params, 0.0, 0.0);
 Point2D p0 = points.get("p0");
 Point2D p1 = points.get("p1");
 ```
@@ -306,15 +270,15 @@ Point2D p1 = points.get("p1");
 ShapePreview_ExampleShape preview = new ShapePreview_ExampleShape();
 
 // Display parameter form
-for (ParamInfo param : preview.getParameters().values()) {
+for (Parameter param : preview.getParameters().values()) {
     addSlider(param.name, param.defaultValue, param.description);
 }
 
 // User adjusts parameters
 Map<String, Double> userValues = getUserInput();
 
-// Calculate preview
-Map<String, Point2D> points = preview.calculatePreviewPoints(userValues);
+// Calculate preview (trim from manufacturing context if needed)
+Map<String, Point2D> points = preview.calculatePoints(userValues, trimLeft, trimBottom);
 
 // Render preview
 for (Point2D point : points.values()) {
@@ -447,7 +411,7 @@ import com.manufacturing.ShapeTransformer;
 import com.manufacturing.Param;
 
 // After (v2.0): UI is standalone
-import com.example.geometry.generated.ShapePreview_XXX;
+import com.company.gsap.generated.preview.ShapePreview_XXX;
 ```
 
 ### 3. Independent Evolution
@@ -469,16 +433,14 @@ Test each concern separately:
 
 ### Generator Classes
 
-| Generator | Input | Output | Purpose |
-|-----------|-------|--------|---------|
-| `ParametricCodeGenerator` | ShapeDTO | ShapeTransformer | Manufacturing code |
-| `ShapePreviewGenerator` | ShapeDTO | ShapePreview | Visualization code |
+| Generator | Package | Input | Output role |
+|-----------|---------|-------|-------------|
+| `ParametricCodeGenerator` | `com.company.gsap.generator` | `ShapeDTO` | `ShapeTransformer` source |
+| `ShapePreviewGenerator` | `com.company.gsap.generator` | `ShapeDTO` | `ShapePreview` source |
 
-### Template System
+### Template system
 
-Each generator uses a dedicated template:
-- `ShapeTemplate` → Manufacturing file structure
-- `ShapePreviewTemplate` → Preview file structure
+Each generator uses a dedicated template (`ShapeTemplate`, `ShapePreviewTemplate`) that emits the packages **`com.company.gsap.generated`** and **`com.company.gsap.generated.preview`** respectively.
 
 ### Generation Trigger
 
@@ -548,7 +510,7 @@ Next generation will produce both files.
 ShapePreview_Rectangle preview = new ShapePreview_Rectangle();
 
 // Get all parameters
-for (ParamInfo param : preview.getParameters().values()) {
+for (Parameter param : preview.getParameters().values()) {
     System.out.println(param.name + ": " + param.description);
     System.out.println("  Type: " + param.type);
     System.out.println("  Default: " + param.defaultValue);
@@ -574,7 +536,7 @@ params.put("L", 1200.0);
 params.put("H", 900.0);
 
 // Calculate preview
-Map<String, Point2D> points = preview.calculatePreviewPoints(params);
+Map<String, Point2D> points = preview.calculatePoints(params, 0.0, 0.0);
 
 // Render
 graphics.setColor(Color.BLUE);
@@ -648,16 +610,12 @@ for (Edge edge : edges) {
 
 ---
 
-## See Also
+## See also
 
-- [PARAMETRIC_FORMAT.md](PARAMETRIC_FORMAT.md) — v2.0 JSON format details
-- [ARCHITECTURE.md](ARCHITECTURE.md) — System architecture
-- [COMPLETE_GUIDE.md](COMPLETE_GUIDE.md) — Usage examples
-- [README.md](README.md) — Project overview
+- [PARAMETRIC_FORMAT.md](PARAMETRIC_FORMAT.md) — v2.0 JSON format
+- [ARCHITECTURE.md](ARCHITECTURE.md) — pipeline architecture
+- [README.md](../README.md) — build, worker, scope
 
 ---
 
-**Feature:** Dual Output (ShapeTransformer + ShapePreview)  
-**Status:** Production Ready ✅  
-**Version:** 2.0.0  
-**Last Updated:** March 3, 2026
+**Feature:** dual output (ShapeTransformer + ShapePreview) · **Version:** 2.0.0 · **Last updated:** May 4, 2026

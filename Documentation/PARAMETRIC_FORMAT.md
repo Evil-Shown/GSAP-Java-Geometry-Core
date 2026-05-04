@@ -1,9 +1,8 @@
 # Parametric Format Specification v2.0
 
-**GSAP Geometry Core — Parametric JSON Format**  
+**GSAP Geometry Core — parametric JSON format**  
 **Version:** 2.0.0  
-**Status:** Production Ready  
-**Last Updated:** March 3, 2026
+**Last updated:** May 4, 2026
 
 ---
 
@@ -289,6 +288,7 @@ For each v2.0 shape, the system generates **TWO** Java files:
 #### 1. ShapeTransformer_XXX.java
 
 **Purpose:** Manufacturing execution  
+**Package:** `com.company.gsap.generated`  
 **Contains:**
 - Parametric resize() method
 - Point calculations using expressions
@@ -317,20 +317,25 @@ public List<Edge> resize(Param param, ParamList paramList) {
 #### 2. ShapePreview_XXX.java
 
 **Purpose:** Visualization and metadata  
+**Package:** `com.company.gsap.generated.preview`  
 **Contains:**
-- Parameter definitions with types and defaults
-- Shape metadata (name, thickness, unit)
-- Preview point calculator
-- No manufacturing dependencies
+- Parameter definitions (`Parameter` nested type: name, type, default, description)
+- Shape metadata (name, thickness, unit, counts, parametric flags)
+- `getPreviewPoints()` and `calculatePoints(paramValues, trimLeft, trimBottom)`
+- No dependency on manufacturing `Edge` / `ShapeTransformer` types
 
-**Example:**
+**Example (abbreviated):**
 ```java
+package com.company.gsap.generated.preview;
+
 public class ShapePreview_Rectangle {
-    private final Map<String, ParamInfo> parameters;
-    
-    public Map<String, ParamInfo> getParameters() { ... }
+    public Map<String, Parameter> getParameters() { ... }
     public Map<String, String> getMetadata() { ... }
-    public Map<String, Point2D> calculatePreviewPoints(Map<String, Double> paramValues) { ... }
+    public Map<String, Point2D> getPreviewPoints() { ... }
+    public Map<String, Point2D> calculatePoints(
+            Map<String, Double> paramValues, double trimLeft, double trimBottom) { ... }
+
+    public static class Parameter { ... }
 }
 ```
 
@@ -544,15 +549,12 @@ The system still supports v1.0 format with hardcoded coordinates:
 
 ---
 
-## See Also
+## See also
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — System architecture overview
-- [DUAL_OUTPUT.md](DUAL_OUTPUT.md) — Dual file generation details
-- [COMPLETE_GUIDE.md](COMPLETE_GUIDE.md) — Usage examples
-- [README.md](README.md) — Project overview
+- [ARCHITECTURE.md](ARCHITECTURE.md) — pipeline architecture
+- [DUAL_OUTPUT.md](DUAL_OUTPUT.md) — dual file generation
+- [README.md](../README.md) — build, worker, and scope
 
 ---
 
-**Format Version:** 2.0.0  
-**Status:** Production Ready ✅  
-**Last Updated:** March 3, 2026
+**Format version:** 2.0.0 · **Last updated:** May 4, 2026
