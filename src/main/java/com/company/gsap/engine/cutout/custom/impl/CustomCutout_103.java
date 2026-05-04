@@ -15,6 +15,7 @@ public class CustomCutout_103 extends AbstractCustomProfileCutout {
         double h = param("H", 24.0);
         double r = w / 2.0; // U-slot with semicircle cap
         double profileSize = Math.max(Math.max(w, h), 2.0 * r);
-        return geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+CutoutPlacement base = geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+        return new CutoutPlacement(base.x(), base.y(), base.rotationAngleDegrees(), base.size(), 103);
     }
 }

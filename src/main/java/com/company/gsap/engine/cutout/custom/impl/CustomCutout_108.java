@@ -15,6 +15,7 @@ public class CustomCutout_108 extends AbstractCustomProfileCutout {
         double r = param("R", w / 2.0);
         double a = param("A", 0.0); // param retained for profile compatibility
         double profileSize = Math.max(w, 2.0 * r) + Math.abs(a) * 0.0;
-        return geometryEngine.computeInteriorCutout(placementPoint(), profileSize);
+CutoutPlacement base = geometryEngine.computeInteriorCutout(placementPoint(), profileSize);
+        return new CutoutPlacement(base.x(), base.y(), base.rotationAngleDegrees(), base.size(), 108);
     }
 }

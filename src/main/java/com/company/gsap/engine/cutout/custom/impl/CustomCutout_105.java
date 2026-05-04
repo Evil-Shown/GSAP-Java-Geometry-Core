@@ -12,6 +12,7 @@ public class CustomCutout_105 extends AbstractCustomProfileCutout {
     @Override
     public CutoutPlacement computePlacement() {
         double r = param("R", 18.0); // corner fillet style
-        return geometryEngine.computeCornerCutout(placementPoint(), 2.0 * r);
+CutoutPlacement base = geometryEngine.computeCornerCutout(placementPoint(), 2.0 * r);
+        return new CutoutPlacement(base.x(), base.y(), base.rotationAngleDegrees(), base.size(), 105);
     }
 }

@@ -14,6 +14,7 @@ public class CustomCutout_100 extends AbstractCustomProfileCutout {
         double w = param("W", 24.0);
         double h = param("H", 24.0);
         double profileSize = Math.max(w, h); // rectangular notch profile
-        return geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+CutoutPlacement base = geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+        return new CutoutPlacement(base.x(), base.y(), base.rotationAngleDegrees(), base.size(), 100);
     }
 }

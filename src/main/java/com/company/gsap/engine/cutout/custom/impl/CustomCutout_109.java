@@ -12,6 +12,7 @@ public class CustomCutout_109 extends AbstractCustomProfileCutout {
     @Override
     public CutoutPlacement computePlacement() {
         double r = param("R", 18.0); // circular interior hole/notch
-        return geometryEngine.computeInteriorCutout(placementPoint(), 2.0 * r);
+CutoutPlacement base = geometryEngine.computeInteriorCutout(placementPoint(), 2.0 * r);
+        return new CutoutPlacement(base.x(), base.y(), base.rotationAngleDegrees(), base.size(), 109);
     }
 }

@@ -14,6 +14,7 @@ public class CustomCutout_104 extends AbstractCustomProfileCutout {
         double w = param("W", 24.0);
         double r = param("R", w / 2.0); // circular/arched edge slot
         double profileSize = Math.max(w, 2.0 * r);
-        return geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+CutoutPlacement base = geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+        return new CutoutPlacement(base.x(), base.y(), base.rotationAngleDegrees(), base.size(), 104);
     }
 }

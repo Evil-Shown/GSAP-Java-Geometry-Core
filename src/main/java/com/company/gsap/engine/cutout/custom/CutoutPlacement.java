@@ -4,6 +4,10 @@ public record CutoutPlacement(
         double x,
         double y,
         double rotationAngleDegrees,
-        double size
+        double size,
+        int cutoutNo
 ) {
+    public CutoutPlacement(double x, double y, double rotationAngleDegrees, double size) {
+        this(x, y, rotationAngleDegrees, size, 0);
+    }
 }

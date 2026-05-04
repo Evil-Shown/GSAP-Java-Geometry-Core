@@ -15,6 +15,7 @@ public class CustomCutout_101 extends AbstractCustomProfileCutout {
         double h = param("H", 24.0);
         double r = param("R", Math.min(w, h) / 4.0);
         double profileSize = Math.max(Math.max(w, h), 2.0 * r); // rounded-rect top
-        return geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+CutoutPlacement base = geometryEngine.computeEdgeCutout(placementPoint(), profileSize);
+        return new CutoutPlacement(base.x(), base.y(), base.rotationAngleDegrees(), base.size(), 101);
     }
 }
