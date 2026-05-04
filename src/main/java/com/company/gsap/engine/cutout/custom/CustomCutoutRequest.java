@@ -1,7 +1,10 @@
 package com.company.gsap.engine.cutout.custom;
 
+import java.util.Map;
+
 public record CustomCutoutRequest(
         String id,
+        String cutoutNo,
         CustomCutoutType type,
         Double x,
         Double y,
@@ -10,6 +13,7 @@ public record CustomCutoutRequest(
         Double offset,
         Boolean startOffset,
         Double offsetX,
-        Double offsetY
+        Double offsetY,
+        Map<String, Double> params
 ) {
 }

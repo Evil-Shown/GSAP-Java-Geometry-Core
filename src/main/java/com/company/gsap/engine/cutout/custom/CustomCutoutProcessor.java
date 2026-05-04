@@ -40,6 +40,7 @@ public class CustomCutoutProcessor {
             double size = request.size() != null && request.size() > 0.0 ? request.size() : 24.0;
             CustomCutoutRequest normalized = new CustomCutoutRequest(
                     request.id(),
+                    request.cutoutNo(),
                     request.type(),
                     placementPoint[0],
                     placementPoint[1],
@@ -48,10 +49,13 @@ public class CustomCutoutProcessor {
                     request.offset(),
                     request.startOffset(),
                     request.offsetX(),
-                    request.offsetY());
+                    request.offsetY(),
+                    request.params());
             CustomCutout cutout = CustomCutoutFactory.create(normalized, polygon);
             CutoutPlacement p = cutout.computePlacement();
-            out.add(new CutoutPlacementResult(normalized.id(), normalized.type(), p));
+            CustomCutoutProfile profile = CustomCutoutProfiles.resolve(normalized.cutoutNo());
+            CustomCutoutType resolvedType = profile != null ? profile.type() : normalized.type();
+            out.add(new CutoutPlacementResult(normalized.id(), normalized.cutoutNo(), resolvedType, p));
         }
         String shapeEntityId = metadata == null ? "unknown" : metadata.getOrDefault(CustomCutoutMetadataKeys.SHAPE_ENTITY_ID, "unknown");
         log.info("[CustomCutout] Emitting {} placements for shapeId={}", out.size(), shapeEntityId);
@@ -149,6 +153,7 @@ public class CustomCutoutProcessor {
 
     public record CutoutPlacementResult(
             String id,
+            String cutoutNo,
             CustomCutoutType type,
             CutoutPlacement placement
     ) {
