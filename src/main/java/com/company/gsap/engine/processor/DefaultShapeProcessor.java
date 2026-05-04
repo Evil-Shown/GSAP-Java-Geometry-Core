@@ -1,6 +1,7 @@
 package com.company.gsap.engine.processor;
 
 import com.company.gsap.engine.cutout.custom.CustomCutoutProcessor;
+import com.company.gsap.engine.cutout.custom.CustomCutoutMetadataKeys;
 import com.company.gsap.engine.core.GeometryBuilder;
 import com.company.gsap.engine.core.ShapeDefinition;
 import com.company.gsap.engine.model.*;
@@ -45,7 +46,7 @@ public class DefaultShapeProcessor {
         transformed = EdgeServiceOutlineExpander.apply(transformed, input.edgeServiceAmountsByEdgeId());
         var customPlacements = customCutoutProcessor.process(transformed, mergedMetadata);
         if (!customPlacements.isEmpty()) {
-            mergedMetadata.put("customCutoutPlacements", customCutoutProcessor.serializeResults(customPlacements));
+            mergedMetadata.put(CustomCutoutMetadataKeys.CUSTOM_CUTOUT_PLACEMENTS, customCutoutProcessor.serializeResults(customPlacements));
         }
         ResolvedShape resolvedShape = new ResolvedShape(definition.id(), definition.parameters(), transformed, mergedMetadata);
         Geometry geometry = geometryBuilder.build(resolvedShape);
