@@ -12,10 +12,14 @@ public class CustomCutoutGeometryEngine {
     }
 
     public CutoutPlacement computeEdgeCutout(double[] placementPoint, double size) {
-        double[] midpoint = edgeNormalResolver.findNearestEdgeMidpoint(polygonPoints, placementPoint);
+        // Honour the offset that CustomCutoutProcessor.resolvePlacementPoint already
+        // walked along the actual edge. The previous implementation discarded it and
+        // snapped to the nearest segment midpoint, which made every edge cutout sit
+        // at the centre of its edge regardless of the offset typed by the user.
+        // The normal resolver is still useful for orientation only.
         double[] normal = edgeNormalResolver.resolveOutwardNormal(polygonPoints, placementPoint);
         double angle = Math.toDegrees(Math.atan2(normal[1], normal[0]));
-        return new CutoutPlacement(midpoint[0], midpoint[1], angle, size);
+        return new CutoutPlacement(placementPoint[0], placementPoint[1], angle, size);
     }
 
     public CutoutPlacement computeInteriorCutout(double[] placementPoint, double size) {
